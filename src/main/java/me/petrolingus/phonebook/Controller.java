@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 // TODO: 06.05.2021 fix duplicated code
 @SuppressWarnings("DuplicatedCode")
@@ -267,6 +266,8 @@ public class Controller {
         tableView.getColumns().clear();
         for (int i = 0; i < resultSet.getMetaData().getColumnCount(); i++) {
             String dbColumnName = resultSet.getMetaData().getColumnName(i + 1);
+            if (dbColumnName.equals("id") || dbColumnName.equals("person_id") || dbColumnName.equals("phone_number_id"))
+                continue;
             int finalI = i;
             TableColumn<ObservableList<String>, String> column = new TableColumn<>(dbColumnName);
             column.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(finalI)));
