@@ -74,6 +74,10 @@ public class Controller {
         }
     }
 
+    public void onChangeButton() throws IOException {
+
+    }
+
     public void onDeleteButton() {
 
         Toggle selectedToggle = tableSwitchGroup.getSelectedToggle();
