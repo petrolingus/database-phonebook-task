@@ -7,19 +7,19 @@
 
 <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="400.0" spacing="8.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <VBox spacing="4.0">
+      <VBox fx:id="phone" spacing="4.0">
          <children>
             <Label text="Номер телефона" />
             <TextField />
          </children>
       </VBox>
-      <VBox spacing="4.0">
+      <VBox fx:id="type" spacing="4.0">
          <children>
             <Label text="Тип" />
             <TextField />
          </children>
       </VBox>
-      <VBox spacing="4.0">
+      <VBox fx:id="provider" spacing="4.0">
          <children>
             <Label text="Мобильный оператор" />
          </children>

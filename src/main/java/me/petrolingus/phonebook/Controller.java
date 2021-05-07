@@ -85,7 +85,7 @@ public class Controller {
             if (toggles.get(0).equals(selectedToggle)) {
                 changePerson();
             } else if (toggles.get(1).equals(selectedToggle)) {
-
+                changePhoneNumber();
             } else if (toggles.get(2).equals(selectedToggle)) {
 
             } else {
@@ -223,6 +223,45 @@ public class Controller {
             try (Statement statement = connection.createStatement()) {
                 String id = tableView.getSelectionModel().getSelectedItem().get(0);
                 statement.execute("update person set" + values + "where id=" + id);
+                onTableSwitch();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public void changePhoneNumber() throws IOException {
+
+        String headerText = "Change existing phone number which contain in the database.";
+        String title = "Change Phone Dialog";
+        Dialog<List<String>> dialog = createDialogue("/phone.fxml", title, headerText, "Change");
+
+        // Filling TextFields
+        ObservableList<Node> children = ((VBox) dialog.getDialogPane().getChildren().get(3)).getChildren();
+        ObservableList<String> selectedItem = tableView.getSelectionModel().getSelectedItem();
+        for (int i = 0; i < children.size() - 1; i++) {
+            ((TextField)((VBox) children.get(i)).getChildren().get(1)).setText(selectedItem.get(i + 1));
+        }
+
+        // Filling ChoiceBox
+        ChoiceBox<Pair<Integer, String>> choiceBoxPerson = createChoiceBox("select id, name from provider;", 2);
+        for (Pair<Integer, String> pair : Objects.requireNonNull(choiceBoxPerson).getItems()) {
+            if (pair.getValue().equals(selectedItem.get(children.size()))) {
+                choiceBoxPerson.getSelectionModel().select(pair);
+                break;
+            }
+        }
+        ((VBox) ((VBox) dialog.getDialogPane().getChildren().get(3)).getChildren().get(2)).getChildren().add(choiceBoxPerson);
+
+        dialog.showAndWait().ifPresent(fields -> {
+            List<String> fixedFields = new ArrayList<>();
+            for (int i = 0; i < children.size(); i++) {
+                fixedFields.add(children.get(i).getId() + " = " + fields.get(i));
+            }
+            String values = fixedFields.stream().collect(Collectors.joining(", ", " ", " "));
+            try (Statement statement = connection.createStatement()) {
+                String id = tableView.getSelectionModel().getSelectedItem().get(0);
+                statement.execute("update phone_number set" + values + "where id=" + id);
                 onTableSwitch();
             } catch (SQLException e) {
                 e.printStackTrace();
