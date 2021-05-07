@@ -87,7 +87,7 @@ public class Controller {
             } else if (toggles.get(1).equals(selectedToggle)) {
                 changePhoneNumber();
             } else if (toggles.get(2).equals(selectedToggle)) {
-
+                changeProvider();
             } else {
 
             }
@@ -262,6 +262,34 @@ public class Controller {
             try (Statement statement = connection.createStatement()) {
                 String id = tableView.getSelectionModel().getSelectedItem().get(0);
                 statement.execute("update phone_number set" + values + "where id=" + id);
+                onTableSwitch();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private void changeProvider() throws IOException {
+
+        String headerText = "Change existing provider which contain in the database.";
+        String title = "Chane Provider Dialog";
+        Dialog<List<String>> dialog = createDialogue("/provider.fxml", title, headerText, "Change");
+
+        ObservableList<Node> children = ((VBox) dialog.getDialogPane().getChildren().get(3)).getChildren();
+        ObservableList<String> selectedItem = tableView.getSelectionModel().getSelectedItem();
+        for (int i = 0; i < children.size(); i++) {
+            ((TextField)((VBox) children.get(i)).getChildren().get(1)).setText(selectedItem.get(i + 1));
+        }
+
+        dialog.showAndWait().ifPresent(fields -> {
+            List<String> fixedFields = new ArrayList<>();
+            for (int i = 0; i < children.size(); i++) {
+                fixedFields.add(children.get(i).getId() + " = " + fields.get(i));
+            }
+            String values = fixedFields.stream().collect(Collectors.joining(", ", " ", " "));
+            try (Statement statement = connection.createStatement()) {
+                String id = tableView.getSelectionModel().getSelectedItem().get(0);
+                statement.execute("update provider set" + values + "where id=" + id);
                 onTableSwitch();
             } catch (SQLException e) {
                 e.printStackTrace();
