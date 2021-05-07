@@ -4,6 +4,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 // TODO: 06.05.2021 fix duplicated code
 @SuppressWarnings("DuplicatedCode")
@@ -76,6 +78,21 @@ public class Controller {
 
     public void onChangeButton() throws IOException {
 
+        Toggle selectedToggle = tableSwitchGroup.getSelectedToggle();
+        ObservableList<Toggle> toggles = tableSwitchGroup.getToggles();
+        ObservableList<String> selectedItem = tableView.getSelectionModel().getSelectedItem();
+
+        if (selectedItem != null) {
+            if (toggles.get(0).equals(selectedToggle)) {
+                changePerson();
+            } else if (toggles.get(1).equals(selectedToggle)) {
+
+            } else if (toggles.get(2).equals(selectedToggle)) {
+
+            } else {
+
+            }
+        }
     }
 
     public void onDeleteButton() {
@@ -177,6 +194,36 @@ public class Controller {
             String values = fields.stream().collect(Collectors.joining(", ", "(", ")"));
             try (Statement statement = connection.createStatement()) {
                 statement.execute("insert into phone_contact values " + values);
+                onTableSwitch();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+
+    public void changePerson() throws IOException {
+
+        String headerText = "Change existing person which contain in the database.";
+        String title = "Chane Person Dialog";
+        Dialog<List<String>> dialog = createDialogue("/person.fxml", title, headerText, "Change");
+
+        ObservableList<Node> children = ((VBox) dialog.getDialogPane().getChildren().get(3)).getChildren();
+        ObservableList<String> selectedItem = tableView.getSelectionModel().getSelectedItem();
+        for (int i = 0; i < children.size(); i++) {
+            // TODO: 07.05.2021 Пофиксить i + 1, когда id не выводится
+            ((TextField)((VBox) children.get(i)).getChildren().get(1)).setText(selectedItem.get(i + 1));
+        }
+
+        dialog.showAndWait().ifPresent(fields -> {
+            List<String> fixedFields = new ArrayList<>();
+            for (int i = 0; i < children.size(); i++) {
+                fixedFields.add(children.get(i).getId() + " = " + fields.get(i));
+            }
+            String values = fixedFields.stream().collect(Collectors.joining(", ", " ", " "));
+            try (Statement statement = connection.createStatement()) {
+                String id = tableView.getSelectionModel().getSelectedItem().get(0);
+                statement.execute("update person set" + values + "where id=" + id);
                 onTableSwitch();
             } catch (SQLException e) {
                 e.printStackTrace();
