@@ -19,8 +19,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-// TODO: 06.05.2021 fix duplicated code
-@SuppressWarnings("DuplicatedCode")
 public class Controller {
 
     public TableView<ObservableList<String>> tableView;
@@ -210,24 +208,11 @@ public class Controller {
         ObservableList<Node> children = ((VBox) dialog.getDialogPane().getChildren().get(3)).getChildren();
         ObservableList<String> selectedItem = tableView.getSelectionModel().getSelectedItem();
         for (int i = 0; i < children.size(); i++) {
-            // TODO: 07.05.2021 Пофиксить i + 1, когда id не выводится
             ((TextField)((VBox) children.get(i)).getChildren().get(1)).setText(selectedItem.get(i + 1));
         }
 
-        dialog.showAndWait().ifPresent(fields -> {
-            List<String> fixedFields = new ArrayList<>();
-            for (int i = 0; i < children.size(); i++) {
-                fixedFields.add(children.get(i).getId() + " = " + fields.get(i));
-            }
-            String values = fixedFields.stream().collect(Collectors.joining(", ", " ", " "));
-            try (Statement statement = connection.createStatement()) {
-                String id = tableView.getSelectionModel().getSelectedItem().get(0);
-                statement.execute("update person set" + values + "where id=" + id);
-                onTableSwitch();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
+        String id = "id = " + tableView.getSelectionModel().getSelectedItem().get(0);
+        showAndWait(dialog, children, "person", id);
     }
 
     public void changePhoneNumber() throws IOException {
@@ -253,20 +238,8 @@ public class Controller {
         }
         ((VBox) ((VBox) dialog.getDialogPane().getChildren().get(3)).getChildren().get(2)).getChildren().add(choiceBoxPerson);
 
-        dialog.showAndWait().ifPresent(fields -> {
-            List<String> fixedFields = new ArrayList<>();
-            for (int i = 0; i < children.size(); i++) {
-                fixedFields.add(children.get(i).getId() + " = " + fields.get(i));
-            }
-            String values = fixedFields.stream().collect(Collectors.joining(", ", " ", " "));
-            try (Statement statement = connection.createStatement()) {
-                String id = tableView.getSelectionModel().getSelectedItem().get(0);
-                statement.execute("update phone_number set" + values + "where id=" + id);
-                onTableSwitch();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
+        String id = "id = " + tableView.getSelectionModel().getSelectedItem().get(0);
+        showAndWait(dialog, children, "phone_number", id);
     }
 
     private void changeProvider() throws IOException {
@@ -281,20 +254,8 @@ public class Controller {
             ((TextField)((VBox) children.get(i)).getChildren().get(1)).setText(selectedItem.get(i + 1));
         }
 
-        dialog.showAndWait().ifPresent(fields -> {
-            List<String> fixedFields = new ArrayList<>();
-            for (int i = 0; i < children.size(); i++) {
-                fixedFields.add(children.get(i).getId() + " = " + fields.get(i));
-            }
-            String values = fixedFields.stream().collect(Collectors.joining(", ", " ", " "));
-            try (Statement statement = connection.createStatement()) {
-                String id = tableView.getSelectionModel().getSelectedItem().get(0);
-                statement.execute("update provider set" + values + "where id=" + id);
-                onTableSwitch();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
+        String id = "id = " + tableView.getSelectionModel().getSelectedItem().get(0);
+        showAndWait(dialog, children, "provider", id);
     }
 
     private void changePhonebook() throws IOException {
@@ -325,21 +286,9 @@ public class Controller {
         }
         ((VBox) ((VBox) dialog.getDialogPane().getChildren().get(3)).getChildren().get(1)).getChildren().add(choiceBoxPhoneNumber);
 
-        dialog.showAndWait().ifPresent(fields -> {
-            List<String> fixedFields = new ArrayList<>();
-            for (int i = 0; i < children.size(); i++) {
-                fixedFields.add(children.get(i).getId() + " = " + fields.get(i));
-            }
-            String values = fixedFields.stream().collect(Collectors.joining(", ", " ", " "));
-            try (Statement statement = connection.createStatement()) {
-                String person_id = "person_id = " + tableView.getSelectionModel().getSelectedItem().get(0);
-                String phone_number_id = "phone_number_id = " + tableView.getSelectionModel().getSelectedItem().get(1);
-                statement.execute("update phone_contact set" + values + "where " + person_id + " and " + phone_number_id);
-                onTableSwitch();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
+        String person_id = "person_id = " + tableView.getSelectionModel().getSelectedItem().get(0);
+        String phone_number_id = "phone_number_id = " + tableView.getSelectionModel().getSelectedItem().get(1);
+        showAndWait(dialog, children, "phone_contact", person_id + " and " + phone_number_id);
     }
 
 
@@ -423,6 +372,22 @@ public class Controller {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private void showAndWait(Dialog<List<String>> dialog, ObservableList<Node> children, String tableName, String where) {
+        dialog.showAndWait().ifPresent(fields -> {
+            List<String> fixedFields = new ArrayList<>();
+            for (int i = 0; i < children.size(); i++) {
+                fixedFields.add(children.get(i).getId() + " = " + fields.get(i));
+            }
+            String values = fixedFields.stream().collect(Collectors.joining(", ", " ", " "));
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("update " + tableName + " set" + values + "where " + where);
+                onTableSwitch();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
 }
