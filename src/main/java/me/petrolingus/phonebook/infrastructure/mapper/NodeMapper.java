@@ -1,4 +1,4 @@
-package me.petrolingus.phonebook.mapper;
+package me.petrolingus.phonebook.infrastructure.mapper;
 
 import javafx.scene.Node;
 import javafx.scene.control.ChoiceBox;

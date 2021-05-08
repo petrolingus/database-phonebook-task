@@ -10,7 +10,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.util.Pair;
 import me.petrolingus.phonebook.infrastructure.converter.ChoiceBoxStringConverter;
-import me.petrolingus.phonebook.mapper.NodeMapper;
+import me.petrolingus.phonebook.infrastructure.mapper.NodeMapper;
 
 import java.io.IOException;
 import java.sql.*;
