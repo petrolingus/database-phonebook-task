@@ -6,12 +6,12 @@
 
 <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="400.0" spacing="8.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <VBox spacing="4.0">
+      <VBox fx:id="person_id" spacing="4.0">
          <children>
             <Label text="Пользователь" />
          </children>
       </VBox>
-      <VBox spacing="4.0">
+      <VBox fx:id="phone_number_id" spacing="4.0">
          <children>
             <Label text="Номер телефона" />
          </children>

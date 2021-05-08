@@ -89,7 +89,7 @@ public class Controller {
             } else if (toggles.get(2).equals(selectedToggle)) {
                 changeProvider();
             } else {
-
+                changePhonebook();
             }
         }
     }
@@ -290,6 +290,51 @@ public class Controller {
             try (Statement statement = connection.createStatement()) {
                 String id = tableView.getSelectionModel().getSelectedItem().get(0);
                 statement.execute("update provider set" + values + "where id=" + id);
+                onTableSwitch();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private void changePhonebook() throws IOException {
+
+        String headerText = "Change existing phonebook data which contain in the database.";
+        String title = "Chane Phonebook Dialog";
+        Dialog<List<String>> dialog = createDialogue("/phonebook.fxml", title, headerText, "Change");
+
+        ObservableList<Node> children = ((VBox) dialog.getDialogPane().getChildren().get(3)).getChildren();
+        ObservableList<String> selectedItem = tableView.getSelectionModel().getSelectedItem();
+
+        ChoiceBox<Pair<Integer, String>> choiceBoxPerson = createChoiceBox("select * from person;", 2, 3, 4, 5);
+        for (Pair<Integer, String> pair : Objects.requireNonNull(choiceBoxPerson).getItems()) {
+            if (pair.getKey().compareTo(Integer.valueOf(selectedItem.get(0))) == 0) {
+                choiceBoxPerson.getSelectionModel().select(pair);
+                break;
+            }
+        }
+        ((VBox) ((VBox) dialog.getDialogPane().getChildren().get(3)).getChildren().get(0)).getChildren().add(choiceBoxPerson);
+
+        String phoneNumberQuery = "select pn.id as id, phone, type, name from phone_number pn join provider p on pn.provider = p.id;";
+        ChoiceBox<Pair<Integer, String>> choiceBoxPhoneNumber = createChoiceBox(phoneNumberQuery, 2, 3, 4);
+        for (Pair<Integer, String> pair : Objects.requireNonNull(choiceBoxPhoneNumber).getItems()) {
+            if (pair.getKey().compareTo(Integer.valueOf(selectedItem.get(1))) == 0) {
+                choiceBoxPhoneNumber.getSelectionModel().select(pair);
+                break;
+            }
+        }
+        ((VBox) ((VBox) dialog.getDialogPane().getChildren().get(3)).getChildren().get(1)).getChildren().add(choiceBoxPhoneNumber);
+
+        dialog.showAndWait().ifPresent(fields -> {
+            List<String> fixedFields = new ArrayList<>();
+            for (int i = 0; i < children.size(); i++) {
+                fixedFields.add(children.get(i).getId() + " = " + fields.get(i));
+            }
+            String values = fixedFields.stream().collect(Collectors.joining(", ", " ", " "));
+            try (Statement statement = connection.createStatement()) {
+                String person_id = "person_id = " + tableView.getSelectionModel().getSelectedItem().get(0);
+                String phone_number_id = "phone_number_id = " + tableView.getSelectionModel().getSelectedItem().get(1);
+                statement.execute("update phone_contact set" + values + "where " + person_id + " and " + phone_number_id);
                 onTableSwitch();
             } catch (SQLException e) {
                 e.printStackTrace();
