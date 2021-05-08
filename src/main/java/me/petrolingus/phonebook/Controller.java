@@ -207,9 +207,7 @@ public class Controller {
 
         ObservableList<Node> children = ((VBox) dialog.getDialogPane().getChildren().get(3)).getChildren();
         ObservableList<String> selectedItem = tableView.getSelectionModel().getSelectedItem();
-        for (int i = 0; i < children.size(); i++) {
-            ((TextField)((VBox) children.get(i)).getChildren().get(1)).setText(selectedItem.get(i + 1));
-        }
+        fillNodes(children, selectedItem);
 
         String id = "id = " + tableView.getSelectionModel().getSelectedItem().get(0);
         showAndWait(dialog, children, "person", id);
@@ -250,9 +248,7 @@ public class Controller {
 
         ObservableList<Node> children = ((VBox) dialog.getDialogPane().getChildren().get(3)).getChildren();
         ObservableList<String> selectedItem = tableView.getSelectionModel().getSelectedItem();
-        for (int i = 0; i < children.size(); i++) {
-            ((TextField)((VBox) children.get(i)).getChildren().get(1)).setText(selectedItem.get(i + 1));
-        }
+        fillNodes(children, selectedItem);
 
         String id = "id = " + tableView.getSelectionModel().getSelectedItem().get(0);
         showAndWait(dialog, children, "provider", id);
@@ -388,6 +384,12 @@ public class Controller {
                 e.printStackTrace();
             }
         });
+    }
+
+    private void fillNodes(ObservableList<Node> children, ObservableList<String> selectedItem) {
+        for (int i = 0; i < children.size(); i++) {
+            ((TextField)((VBox) children.get(i)).getChildren().get(1)).setText(selectedItem.get(i + 1));
+        }
     }
 
 }
