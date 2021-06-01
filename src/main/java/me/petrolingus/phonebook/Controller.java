@@ -12,11 +12,13 @@ import javafx.util.Pair;
 import me.petrolingus.phonebook.infrastructure.converter.ChoiceBoxStringConverter;
 import me.petrolingus.phonebook.infrastructure.mapper.NodeMapper;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class Controller {
@@ -24,6 +26,15 @@ public class Controller {
     public TableView<ObservableList<String>> tableView;
 
     public ToggleGroup tableSwitchGroup;
+
+    public TextField searchFirstNameField;
+    public TextField searchLastNameField;
+    public TextField searchMiddleNameField;
+    public TextField searchPhoneNumberField;
+    public TextField searchPhoneTypeField;
+    public TextField searchProviderNameField;
+
+    private Properties columnMappings;
 
     private Connection connection;
 
@@ -34,6 +45,22 @@ public class Controller {
         String user = "SA";
         String password = "H#MTlWikoDOfbB1#";
         connection = DriverManager.getConnection(url, user, password);
+
+        Toggle toggle = tableSwitchGroup.getToggles().get(3);
+
+        searchFirstNameField.disableProperty().bind(toggle.selectedProperty().not());
+        searchLastNameField.disableProperty().bind(toggle.selectedProperty().not());
+        searchMiddleNameField.disableProperty().bind(toggle.selectedProperty().not());
+        searchPhoneNumberField.disableProperty().bind(toggle.selectedProperty().not());
+        searchPhoneTypeField.disableProperty().bind(toggle.selectedProperty().not());
+        searchProviderNameField.disableProperty().bind(toggle.selectedProperty().not());
+
+        columnMappings = new Properties();
+        try (FileReader reader = new FileReader("mapping.properties")) {
+            columnMappings.load(reader);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         onTableSwitch();
     }
@@ -50,11 +77,33 @@ public class Controller {
         } else if (toggles.get(2).equals(selectedToggle)) {
             generateTable("select * from provider;");
         } else {
-            generateTable("select person_id, phone_number_id, last_name, first_name, middle_name, phone, type, name from phone_contact" +
-                    "\tjoin person on person.id = person_id" +
-                    "\tjoin phone_number on phone_number.id = phone_number_id" +
-                    "\tjoin provider on provider.id = phone_number.provider;");
+
+            String query = "select person_id, phone_number_id, first_name, middle_name, last_name, phone, type, name from phone_contact\n" +
+                    "    join person on person.id = person_id\n" +
+                    "    join phone_number on phone_number.id = phone_number_id\n" +
+                    "    join provider on provider.id = phone_number.provider\n" +
+                    "    where";
+
+            String firstName = " first_name like N'%" + searchFirstNameField.getText() + "%'";
+            String lastName = "  last_name like N'%" + searchLastNameField.getText() + "%'";
+            String middleName = "  middle_name like N'%" + searchMiddleNameField.getText() + "%'";
+            String phoneNumber = "  phone like N'%" + searchPhoneNumberField.getText() + "%'";
+            String phoneType = "  type like N'%" + searchPhoneTypeField.getText() + "%'";
+            String provider = "  name like N'%" + searchProviderNameField.getText() + "%'";
+
+            String join = String.join(" and ", lastName, firstName, middleName, phoneNumber, phoneType, provider);
+
+//            generateTable("select person_id, phone_number_id, last_name, first_name, middle_name, phone, type, name from phone_contact" +
+//                    "\tjoin person on person.id = person_id" +
+//                    "\tjoin phone_number on phone_number.id = phone_number_id" +
+//                    "\tjoin provider on provider.id = phone_number.provider;");
+
+            generateTable(query + join);
         }
+    }
+
+    public void onSearchTyped() throws SQLException {
+        onTableSwitch();
     }
 
     public void onAddButton() throws IOException {
@@ -109,10 +158,11 @@ public class Controller {
                 } else if (toggles.get(2).equals(selectedToggle)) {
                     statement.execute("delete from provider where id=" + selectedItem.get(0));
                 } else {
-                    statement.execute("delete from phone_contact " +
+                    String sql = "delete from phone_contact " +
                             "where person_id=" + selectedItem.get(0) +
-                            "and phone_number_id=" + selectedItem.get(1)
-                    );
+                            " and phone_number_id=" + selectedItem.get(1);
+                    System.out.println(sql);
+                    statement.execute(sql);
                 }
                 onTableSwitch();
             } catch (SQLException e) {
@@ -323,12 +373,13 @@ public class Controller {
         tableView.getColumns().clear();
         for (int i = 0; i < resultSet.getMetaData().getColumnCount(); i++) {
             String dbColumnName = resultSet.getMetaData().getColumnName(i + 1);
-            if (dbColumnName.equals("id") || dbColumnName.equals("person_id") || dbColumnName.equals("phone_number_id"))
-                continue;
-            int finalI = i;
-            TableColumn<ObservableList<String>, String> column = new TableColumn<>(dbColumnName);
-            column.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(finalI)));
-            tableView.getColumns().add(column);
+            String columnName = columnMappings.getProperty(dbColumnName);
+            if (columnName != null) {
+                int finalI = i;
+                TableColumn<ObservableList<String>, String> column = new TableColumn<>(columnName);
+                column.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(finalI)));
+                tableView.getColumns().add(column);
+            }
         }
 
         ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();

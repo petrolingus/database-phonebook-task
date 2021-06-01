@@ -1,5 +1,5 @@
 .root {
-    -fx-background-color: #f1f1f1;
+    -fx-background-color: #edeef0;
 }
 
 /*******************************************************************************
@@ -35,4 +35,26 @@
 
 .radio-button:selected > .radio > .dot {
     -fx-background-color: #5181b8;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Button                                                                      *
+ *                                                                             *
+ ******************************************************************************/
+
+.button {
+    -fx-background-color: #5f9cec;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+}
+
+.button:hover {
+    -fx-background-color: #4079c5;
+}
+
+.button:focused {
+
 }
